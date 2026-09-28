@@ -44,13 +44,39 @@ $env:PYTHONPATH = "$root\src;$root"
 & $py -m poly_ashare.cli prepare --config "$root\config\experiment_config.json"
 ```
 
-先在项目外准备 token 清单和历史数据缓存，然后缓存历史数据（示例路径均为相对路径）：
+先在项目外准备 token 清单。全量市场目录应使用 Gamma keyset 分页发现并冻结：
 
 ```powershell
-& $py "$root\scripts\cache_poly_history.py" `
-  --manifest "$root\manifests\token_universe.json" `
-  --out "$root\cache\raw"
+& $py "$root\scripts\discover_poly_universe.py" `
+  --out "$root\cache\private_universe\universe.json" `
+  --start-date-min '<POLY_HISTORY_START>' `
+  --start-date-max '<ASHARE_END_DATE>' `
+  --end-date-min '<POLY_HISTORY_START>'
 ```
+
+根据外部 A 股交易日目录和私有 Poly 缓存生成 09:25 日程：
+
+```powershell
+& $py "$root\scripts\build_cutoff_schedule.py" `
+  --ashare-root $env:POLY_AGENT_ASHARE_ROOT `
+  --raw-dir "$root\cache\private_windows" `
+  --out "$root\cache\private_schedule.json"
+```
+
+大 universe 推荐按交易日流式生成截面。每个 cutoff 只请求有限的窗口，保存原始
+响应哈希，封存 snapshot 后再进入下一个交易日；已有文件会自动跳过以支持断点续跑：
+
+```powershell
+& $py "$root\scripts\build_streaming_poly_snapshots.py" `
+  --manifest "$root\cache\private_universe\universe.json" `
+  --schedule "$root\cache\private_schedule.json" `
+  --snapshot-dir "$root\snapshots\private_batch" `
+  --raw-dir "$root\cache\private_windows" `
+  --bucket-seconds 43200
+```
+
+`cache_poly_history.py` 仍可用于小规模调试或需要完整 12 小时序列的离线缓存，
+但不应把所有 token 的完整历史同时加载到正式截面生成进程。
 
 然后使用缓存 manifest 生成截面：
 

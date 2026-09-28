@@ -13,6 +13,7 @@ import datetime as dt
 import hashlib
 import json
 import pathlib
+import sqlite3
 import time
 import urllib.error
 import urllib.parse
@@ -86,6 +87,17 @@ def _load_schedule(path: pathlib.Path) -> list[dict[str, Any]]:
     return sorted(rows, key=lambda row: (row["cutoff_epoch"], row["cutoff_id"]))
 
 
+def _load_token_records(path: pathlib.Path) -> list[dict[str, Any]]:
+    """Load either a JSON manifest or the resume-safe SQLite universe."""
+    if path.suffix.lower() in {".sqlite", ".sqlite3", ".db"}:
+        con = sqlite3.connect(path)
+        try:
+            return [json.loads(row[0]) for row in con.execute("SELECT payload FROM tokens ORDER BY token_id")]
+        finally:
+            con.close()
+    return load_manifest(path)
+
+
 def _raw_path(raw_root: pathlib.Path, cutoff_id: str, token_id: str) -> pathlib.Path:
     return raw_root / cutoff_id / f"token_{token_id}.json"
 
@@ -136,7 +148,7 @@ def build_streaming_batch(
     schedule_path = pathlib.Path(schedule_path)
     snapshot_dir = pathlib.Path(snapshot_dir)
     raw_dir = pathlib.Path(raw_dir)
-    records = load_manifest(manifest_path)
+    records = _load_token_records(manifest_path)
     schedule = _load_schedule(schedule_path)
     snapshot_dir.mkdir(parents=True, exist_ok=True)
     raw_dir.mkdir(parents=True, exist_ok=True)

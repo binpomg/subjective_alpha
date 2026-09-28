@@ -1,0 +1,45 @@
+{
+  "config_version": "poly-ashare-experiment.remote.v1",
+  "experiment": {
+    "cutoff_local": "09:25",
+    "cutoff_timezone": "Asia/Shanghai",
+    "horizons": [20, 60, 120],
+    "top_k": [1, 3, 5],
+    "main_top_k": 5,
+    "mapping_modes": ["strict_update", "start_only_frozen"],
+    "execution_mode": "dry_run",
+    "formal_start": false
+  },
+  "model": {
+    "id": "gpt6-Astra-ultra",
+    "provider": "codex_local_current",
+    "execution": "disabled",
+    "temperature": 0,
+    "network": "disabled",
+    "browser": "disabled",
+    "external_tools": "disabled",
+    "allow_ashare_input": false,
+    "prompt_version": "world_rank_v1"
+  },
+  "polymarket": {
+    "endpoint": "https://data-api.polymarket.com/v2/prices-history",
+    "preferred_interval": "max",
+    "preferred_bucket_seconds": 43200,
+    "exclude_resolution_zero": true,
+    "require_point_end_le_cutoff": true
+  },
+  "paths": {
+    "ashare_root": "data/ashare",
+    "industry_manifest": "manifests/sw2021_level1_v1.json",
+    "token_manifest": "manifests/token_universe.example.json",
+    "output_root": "outputs",
+    "cache_root": "cache"
+  },
+  "cost_model": {
+    "commission_rate": 0.0003,
+    "stamp_duty_rate_sell": 0.0005,
+    "slippage_bps": 10,
+    "lot_size": 100,
+    "long_only": true
+  }
+}

@@ -1,0 +1,2 @@
+# Minimal optional dependency for the offline industry evaluator.
+duckdb==1.5.5

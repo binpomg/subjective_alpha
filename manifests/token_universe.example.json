@@ -1,0 +1,6 @@
+{
+  "manifest_version": "token_universe.v1",
+  "description": "Template only. Register tokens and immutable historical metadata before a run.",
+  "strict_pit_eligible": false,
+  "tokens": []
+}
